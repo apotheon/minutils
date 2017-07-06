@@ -1,0 +1,125 @@
+#!/usr/bin/env ruby
+=begin
+= NAME
+
+blocksize - a tool that calculates optimal blocksizes for dd
+
+= SYNOPSIS
+
+    blocksize help
+
+    blocksize [-c] <FILESIZE>
+
+= DESCRIPTION
+
+This (({blocksize})) tool takes an integer argument and calculates the largest
+power-of-two value of 1MB or smaller that yields no remainder when you divide a
+byte count filesize (e.g. by checking the size using (({ls -l}))) that number.
+
+= COPYRIGHT
+
+== Copyfree Open Innovation License
+
+This is version 0.5 of the Copyfree Open Innovation License.
+
+== Terms and Conditions
+
+Redistributions, modified or unmodified, in whole or in part, must retain
+applicable copyright or other legal privilege notices, these conditions, and
+the following license terms and disclaimer.  Subject to these conditions, the
+holder(s) of copyright or other legal privileges, author(s) or assembler(s),
+and contributors of this work hereby grant to any person who obtains a copy of
+this work in any form:
+
+1. Permission to reproduce, modify, distribute, publish, sell, sublicense, use,
+and/or otherwise deal in the licensed material without restriction.
+
+2. A perpetual, worldwide, non-exclusive, royalty-free, irrevocable patent
+license to reproduce, modify, distribute, publish, sell, use, and/or otherwise
+deal in the licensed material without restriction, for any and all patents:
+
+    a. Held by each such holder of copyright or other legal privilege, author
+    or assembler, or contributor, necessarily infringed by the contributions
+    alone or by combination with the work, of that privilege holder, author or
+    assembler, or contributor.
+
+    b. Necessarily infringed by the work at the time that holder of copyright
+    or other privilege, author or assembler, or contributor made any
+    contribution to the work.
+
+NO WARRANTY OF ANY KIND IS IMPLIED BY, OR SHOULD BE INFERRED FROM, THIS LICENSE
+OR THE ACT OF DISTRIBUTION UNDER THE TERMS OF THIS LICENSE, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
+COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
+OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE WORK.
+=end
+
+usage_text = 'USAGE: blocksizer <FILESIZE>'
+
+help_text = <<-EOF.gsub /^  /, ''
+
+  #{usage_text}
+
+  Enter a FILESIZE (integer filesize in bytes, as from "ls -l") to get
+  the largest blocksize that divides evenly into the file blocksize.
+
+  OPTIONS:
+
+      [--]h[elp]          example: blocksizer -h
+
+              Print this help information to standard output.
+
+      [--]c[ount]         example: blocksizer -c
+
+              Print block count at the calculated blocksize.
+
+  EXAMPLES:
+
+      $ blocksizer 4587520
+      131072
+
+      $ blocksizer count 4587520
+      35 blocks of 131072 blocksize
+
+EOF
+
+arg = ARGV.shift
+
+def blocksize filesize
+  20.downto 0 do |exponent|
+    if filesize % 2 ** exponent == 0 and exponent > 0
+      return 2 ** exponent
+    end
+
+    if exponent == 0
+      return [
+        'The only powers-of-two blocksize for your input',
+        filesize,
+        'is smaller than 2 bytes or larger than (2 ** 20) bytes.'
+      ].join ', '
+    end
+  end
+end
+
+if (count = arg.to_s.match /^-?-?co?u?n?t?/)
+  arg = ARGV.shift
+end
+
+if arg.to_s.match /^-?-?he?l?p?/
+  puts help_text
+elsif arg.to_i.to_s == arg
+  filesize = arg.to_i
+
+  blocksize(filesize).tap do |size|
+    if count
+      puts "#{filesize / size} blocks of #{size} blocksize"
+    else
+      puts size
+    end
+  end
+else
+  puts usage_text
+  puts 'Try "blocksizer help" for help with this program.'
+end
