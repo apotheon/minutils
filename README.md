@@ -7,4 +7,4 @@ bother, I'll move them out to their own separate repositories.
 
 ## list
 
-* [blocksizer](/u/apotheon/minutils/index.cgi/dir?name=blocksizer)
+* [blocksizer](/dir?name=blocksizer)
