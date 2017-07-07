@@ -60,11 +60,12 @@
  */
 
 int is_numeric(char *string_argument);
-int last_newline(int length, char *string, int start);
+int wrap_whitespace(int length, char *string, int start);
 int match_count(char *string_argument);
 int match_help(char *string_argument);
 int match_string(char *s, char *m);
 int power(int base, unsigned int exponent);
+int print_wrap(int wrap, char *string, int position);
 
 unsigned long blocksize(unsigned long filesize);
 unsigned long get_filesize(char *filesize_string);
@@ -103,17 +104,23 @@ int is_numeric(char *s) {
     return 1;
 }
 
-int last_newline(int length, char *string, int start) {
+int wrap_whitespace(int length, char *string, int start) {
     int newline = 0;
-    int position = length;
-
-    for (int c = length; c > 0 && !newline; --c) {
+    for (int c = 0; c < length && !newline; ++c) {
         if (string[start+c] == '\n') {
             length = c;
             newline = 1;
         }
     }
-
+    
+    int whitespace = 0;
+    for (int c = length; c > 0 && !newline && !whitespace; --c) {
+        if (string[start+c] == ' ') {
+            length = c;
+            whitespace = 1;
+        }
+    }
+    
     return length;
 }
 
@@ -150,6 +157,18 @@ int power(int base, unsigned int exponent) {
     int result = 1;
     for (int i = 0; i < exponent; i++) result *= base;
     return result;
+}
+
+int print_wrap(int wrap, char *string, int position) {
+    int remaining_string = strlen(string) - position;
+
+    if (wrap > remaining_string) wrap = remaining_string;
+    wrap = wrap_whitespace(wrap, string, position);
+
+    for (int c = 0; c < wrap; ++c) printf("%c", string[position+c]);
+    printf("\n");
+
+    return wrap;
 }
 
 void print_help() {
@@ -189,26 +208,11 @@ void print_indent(int indent) {
 }
 
 void print_indent_wrap(char *string, int indent, int line_length) {
-    int string_length = strlen(string);
-    int wrap = line_length - indent;
+    for (int p = 0; p < strlen(string); ++p) {
+        int wrap = line_length - indent;
 
-    for (int p = 0; p < string_length; ++p) {
-        int length = string_length - p;
-
-        if (length > 0) {
-            print_indent(indent);
-
-            if (length > wrap) {
-                length = wrap;
-            } else {
-                length = last_newline(length, string, p);
-            }
-
-            for (int c = 0; c < length; ++c) printf("%c", string[p+c]);
-            printf("\n");
-
-            p += length;
-        }
+        print_indent(indent);
+        p += print_wrap(wrap, string, p);
     }
 }
 
