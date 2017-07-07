@@ -107,7 +107,7 @@ int is_numeric(char *s) {
 int wrap_whitespace(int length, char *string, int start) {
     int newline = 0;
     for (int c = 0; c < length && !newline; ++c) {
-        if (string[start+c] == '\n') {
+        if (*(string+start+c) == '\n') {
             length = c;
             newline = 1;
         }
@@ -115,7 +115,7 @@ int wrap_whitespace(int length, char *string, int start) {
     
     int whitespace = 0;
     for (int c = length; c > 0 && !newline && !whitespace; --c) {
-        if (string[start+c] == ' ') {
+        if (*(string+start+c) == ' ') {
             length = c;
             whitespace = 1;
         }
@@ -165,7 +165,7 @@ int print_wrap(int wrap, char *string, int position) {
     if (wrap > remaining_string) wrap = remaining_string;
     wrap = wrap_whitespace(wrap, string, position);
 
-    for (int c = 0; c < wrap; ++c) printf("%c", string[position+c]);
+    for (int c = 0; c < wrap; ++c) printf("%c", *(string+position+c));
     printf("\n");
 
     return wrap;
@@ -182,8 +182,7 @@ void print_help_message() {
 
     print_indent_wrap(
         "Enter a FILESIZE (integer filesize in bytes, as given by 'ls -l') to "
-        "get the largest blocksize that evenly divides the file blocksize.\n",
-        8, 80
+        "get the largest blocksize that evenly divides the file size.\n", 8, 80
     );
 
     printf("\nOPTIONS:\n\n");
