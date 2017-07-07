@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
 
 int is_numeric(char *s) {
     for (int i = 0; i < strlen(s); ++i) {
-        if (s[i] < '0' || s[i] > '9') return 0;
+        if (*(s+i) < '0' || *(s+i) > '9') return 0;
     }
 
     return 1;
@@ -139,7 +139,7 @@ int match_string(char *s, char *m) {
         match = 0;
     } else {
         for (int i = 0; i < length; ++i) {
-            if (s[i] != m[i]) match = 0;
+            if (*(s+i) != *(m+i)) match = 0;
         }
     }
 
@@ -192,8 +192,8 @@ void print_indent_wrap(char *string, int indent, int line_length) {
     int string_length = strlen(string);
     int wrap = line_length - indent;
 
-    for (int s = 0; s < string_length; ++s) {
-        int length = string_length - s;
+    for (int p = 0; p < string_length; ++p) {
+        int length = string_length - p;
 
         if (length > 0) {
             print_indent(indent);
@@ -201,13 +201,13 @@ void print_indent_wrap(char *string, int indent, int line_length) {
             if (length > wrap) {
                 length = wrap;
             } else {
-                length = last_newline(length, string, s);
+                length = last_newline(length, string, p);
             }
 
-            for (int c = 0; c < length; ++c) printf("%c", string[s+c]);
+            for (int c = 0; c < length; ++c) printf("%c", string[p+c]);
             printf("\n");
 
-            s += length;
+            p += length;
         }
     }
 }
