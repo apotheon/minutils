@@ -7,4 +7,5 @@ bother, I'll move them out to their own separate repositories.
 
 ## subprojects
 
-* [Ruby Blocksizer](/dir?name=blocksizer_ruby)
+* [C BlockSizer](/dir?name=blocksizer_c)
+* [Ruby BlockSizer](/dir?name=blocksizer_ruby)
