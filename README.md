@@ -7,5 +7,10 @@ bother, I'll move them out to their own separate repositories.
 
 ## subprojects
 
+These links only work from the [FossRec repository][fossrec].  If you are
+looking at the GitHub mirror, they will be broken links.
+
 * [C BlockSizer](/dir?name=blocksizer_c)
 * [Ruby BlockSizer](/dir?name=blocksizer_ruby)
+
+[fossrec]: https://fossrec.com/u/apotheon/minutils
