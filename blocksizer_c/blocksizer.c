@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /*
  * blocksize - a tool that calculates optimal blocksizes for dd
@@ -69,6 +71,8 @@ int print_wrap(int wrap, char *string, int position);
 
 unsigned long blocksize(unsigned long filesize);
 unsigned long get_filesize(char *filesize_string);
+unsigned long get_number_from_string(const char *numeric_string);
+unsigned long get_size_from_file(const char *filename);
 
 void print_help();
 void print_help_message();
@@ -85,7 +89,7 @@ int main(int argc, char *argv[]) {
         print_usage();
     } else if (argc == 2 && match_help(argv[1])) {
         print_help();
-    } else if (argc == 2 && is_numeric(argv[1])) {
+    } else if (argc == 2) {
         print_size(argv[1]);
     } else if (argc == 3 && match_count(argv[1]) && is_numeric(argv[2])) {
         print_size_with_count(argv[2]);
@@ -181,8 +185,17 @@ void print_help_message() {
     printf("SYNOPSIS:\n\n");
 
     print_indent_wrap(
+        "Enter a FILENAME to get the largest blocksize that evenly divides "
+        "the byte size of the file whose name you supply.\n", 8, 80
+    );
+
+    printf("\n");
+
+    print_indent_wrap(
         "Enter a FILESIZE (integer filesize in bytes, as given by 'ls -l') to "
-        "get the largest blocksize that evenly divides the file size.\n", 8, 80
+        "get the largest blocksize that evenly divides the file size.  If the "
+        "number matches an existing filename, you will get results as though "
+        "you meant to enter a FILENAME instead.\n", 8, 80
     );
 
     printf("\nOPTIONS:\n\n");
@@ -194,6 +207,9 @@ void print_help_message() {
     );
 
     printf("\nEXAMPLES:\n\n");
+
+    print_indent_wrap("$ blocksizer size_4587520_file.img\n", 8, 80);
+    print_indent_wrap("131072\n\n", 8, 80);
 
     print_indent_wrap("$ blocksizer 4587520\n", 8, 80);
     print_indent_wrap("131072\n\n", 8, 80);
@@ -240,8 +256,8 @@ void print_size_with_count(char *filesize_string) {
 }
 
 void print_usage() {
-    printf("USAGE:  blocksizer [[--]count] <FILESIZE>\n");
-    printf("        blocksizer -c <FILESIZE>\n");
+    printf("USAGE:  blocksizer [[--]count] <FILENAME|FILESIZE>\n");
+    printf("        blocksizer -c <FILENAME|FILESIZE>\n");
     printf("        blocksizer [--]help\n");
     printf("        blocksizer -h\n");
 }
@@ -256,14 +272,40 @@ unsigned long blocksize(unsigned long filesize) {
     return 0;
 }
 
-unsigned long get_filesize(char *filesize_string) {
-    char *endptr;
-    unsigned long filesize = strtoul(filesize_string, &endptr, 0);
+unsigned long get_filesize(char *filesize_arg) {
+    unsigned long filesize;
 
-    if (errno == ERANGE || *endptr != '\0') {
-        fprintf(stderr, "Not a valid number or out of range.");
-        exit(EXIT_FAILURE);
+    if (access(filesize_arg, F_OK) != -1) {
+        filesize = get_size_from_file(filesize_arg);
+    } else if (is_numeric(filesize_arg)) {
+        filesize = get_number_from_string(filesize_arg);
     }
 
     return filesize;
+}
+
+unsigned long get_number_from_string(const char *numeric_string) {
+    char *endptr;
+    unsigned long numeric_value = strtoul(numeric_string, &endptr, 0);
+
+    if (errno == ERANGE || *endptr != '\0') {
+        fprintf(stderr, "Number invalid or out of range: %s.\n", numeric_string);
+        exit(EXIT_FAILURE);
+    }
+
+    return numeric_value;
+}
+
+unsigned long get_size_from_file(const char *filename) {
+    struct stat st;
+    unsigned long bytesize;
+
+    if (stat(filename, &st) == 0) {
+        bytesize = (unsigned long) st.st_size;
+    } else {
+        fprintf(stderr, "Filename invalid: %s.\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    return bytesize;
 }
