@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
         print_help();
     } else if (argc == 2) {
         print_size(argv[1]);
-    } else if (argc == 3 && match_count(argv[1]) && is_numeric(argv[2])) {
+    } else if (argc == 3 && match_count(argv[1])) {
         print_size_with_count(argv[2]);
     } else {
         print_input_error();
