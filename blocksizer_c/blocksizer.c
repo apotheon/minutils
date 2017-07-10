@@ -238,8 +238,9 @@ void print_input_error() {
 
 void print_size(char *filesize_string) {
     unsigned long size = blocksize(get_filesize(filesize_string));
-    if (size) printf("%lu\n", size);
-    else print_size_error(filesize_string);
+
+    if (size < 512) print_size_error(filesize_string);
+    else  printf("%lu\n", size);
 }
 
 void print_size_error(char *filesize_string) {
@@ -251,8 +252,12 @@ void print_size_error(char *filesize_string) {
 void print_size_with_count(char *filesize_string) {
     unsigned long filesize = get_filesize(filesize_string);
     unsigned long size = blocksize(filesize);
-    if (size) printf("%lu blocks of %lu blocksize\n", (filesize / size), size);
-    else print_size_error(filesize_string);
+
+    if (size < 512) {
+        print_size_error(filesize_string);
+    } else {
+        printf("%lu blocks of %lu blocksize\n", (filesize / size), size);
+    }
 }
 
 void print_usage() {
