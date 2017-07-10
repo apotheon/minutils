@@ -18,7 +18,11 @@
  * divide a byte count filesize (e.g. by checking the size using "ls -l") by
  * that blocksize number.
  *
- * Copyright 2017 Chad Perrin
+ * All credit for the inspiration to write this utility rightly adheres to the
+ * august personage of Stonish Ogham, who also pointed out a bug (since
+ * squashed).  All blame and dire consequence for actually writing it resides
+ * solely with the 2017 Copyright of Chad Perrin.  So mote it be.
+ *
  * This work is released under the terms of the COIL.
  *
  * # Copyfree Open Innovation License
