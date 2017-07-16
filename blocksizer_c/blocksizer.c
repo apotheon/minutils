@@ -63,7 +63,8 @@ int main(int argc, char *argv[]) {
 }
 
 int is_numeric(char *s) {
-    for (int i = 0; i < strlen(s); ++i) {
+    int length = strlen(s);
+    for (int i = 0; i < length; ++i) {
         if (*(s+i) < '0' || *(s+i) > '9') return 0;
     }
 
@@ -183,7 +184,8 @@ void print_indent(int indent) {
 }
 
 void print_indent_wrap(char *string, int indent, int line_length) {
-    for (int p = 0; p < strlen(string); ++p) {
+    int string_length = strlen(string);
+    for (int p = 0; p < string_length; ++p) {
         int wrap = line_length - indent;
 
         print_indent(indent);
