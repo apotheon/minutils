@@ -53,17 +53,11 @@ void print_size_with_count(char *filesize_string);
 void print_usage();
 
 int main(int argc, char *argv[]) {
-    if (argc == 1) {
-        print_usage();
-    } else if (argc == 2 && match_help(argv[1])) {
-        print_help();
-    } else if (argc == 2) {
-        print_size(argv[1]);
-    } else if (argc == 3 && match_count(argv[1])) {
-        print_size_with_count(argv[2]);
-    } else {
-        print_input_error();
-    }
+    if (argc == 1) print_usage();
+    else if (argc == 2 && match_help(argv[1])) print_help();
+    else if (argc == 2) print_size(argv[1]);
+    else if (argc == 3 && match_count(argv[1])) print_size_with_count(argv[2]);
+    else print_input_error();
 
     return 0;
 }
@@ -117,9 +111,7 @@ int match_string(char *s, char *m) {
     if (length != strlen(m)) {
         match = 0;
     } else {
-        for (int i = 0; i < length; ++i) {
-            if (*(s+i) != *(m+i)) match = 0;
-        }
+        for (int i = 0; i < length; ++i) if (*(s+i) != *(m+i)) match = 0;
     }
 
     return match;
@@ -223,16 +215,12 @@ void print_size_error(unsigned long filesize) {
 }
 
 void print_size_with_count(char *filesize_string) {
-    unsigned long filesize = get_filesize(filesize_string);
+    unsigned long fsize = get_filesize(filesize_string);
 
-    if (filesize) {
-        unsigned long size = blocksize(filesize, MAXBITSIZE);
-
-        if (size < 512) {
-            print_size_error(filesize);
-        } else {
-            printf("%lu blocks of %lu blocksize\n", (filesize / size), size);
-        }
+    if (fsize) {
+        unsigned long size = blocksize(fsize, MAXBITSIZE);
+        if (size < 512) print_size_error(fsize);
+        else printf("%lu blocks of %lu blocksize\n", (fsize / size), size);
     } else {
         print_input_error();
     }
@@ -248,27 +236,20 @@ void print_usage() {
 unsigned long blocksize(unsigned long filesize, unsigned long max_blocksize) {
     for (int i = 0; i < 20; ++i) {
         int product = max_blocksize >> i;
-
-        if ((filesize % product) == 0) {
-            return product;
-        }
+        if ((filesize % product) == 0) return product;
     }
 
     return 0;
 }
 
-unsigned long get_filesize(char *filesize_arg) {
-    unsigned long filesize;
+unsigned long get_filesize(char *fsize_arg) {
+    unsigned long fsize;
 
-    if (access(filesize_arg, F_OK) != -1) {
-        filesize = get_size_from_file(filesize_arg);
-    } else if (is_numeric(filesize_arg)) {
-        filesize = get_number_from_string(filesize_arg);
-    } else {
-        filesize = 0;
-    }
+    if (access(fsize_arg, F_OK) != -1) fsize = get_size_from_file(fsize_arg);
+    else if (is_numeric(fsize_arg)) fsize = get_number_from_string(fsize_arg);
+    else fsize = 0;
 
-    return filesize;
+    return fsize;
 }
 
 unsigned long get_number_from_string(const char *numeric_string) {
