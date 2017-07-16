@@ -33,7 +33,6 @@ int is_numeric(char *string_argument);
 int match_count(char *string_argument);
 int match_help(char *string_argument);
 int match_string(char *s, char *m);
-int power(int base, unsigned int exponent);
 int print_wrap(int wrap, char *string, int position);
 int wrap_whitespace(int length, char *string, int start);
 
@@ -116,12 +115,6 @@ int match_string(char *s, char *m) {
     }
 
     return match;
-}
-
-int power(int base, unsigned int exponent) {
-    int result = 1;
-    for (int i = 0; i < exponent; i++) result *= base;
-    return result;
 }
 
 int print_wrap(int wrap, char *string, int position) {
