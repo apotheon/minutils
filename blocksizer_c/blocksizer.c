@@ -178,9 +178,9 @@ void print_indent(int indent) {
 
 void print_indent_wrap(char *string, int indent, int line_length) {
     int string_length = strlen(string);
-    for (int p = 0; p < string_length; ++p) {
-        int wrap = line_length - indent;
+    int wrap = line_length - indent;
 
+    for (int p = 0; p < string_length; ++p) {
         print_indent(indent);
         p += print_wrap(wrap, string, p);
     }
