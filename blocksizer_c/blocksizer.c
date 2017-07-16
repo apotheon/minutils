@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define MAXBITSIZE 1048576
+
 /*
  * blocksize - a tool that calculates optimal blocksizes for dd
  *
@@ -35,7 +37,7 @@ int power(int base, unsigned int exponent);
 int print_wrap(int wrap, char *string, int position);
 int wrap_whitespace(int length, char *string, int start);
 
-unsigned long blocksize(unsigned long filesize);
+unsigned long blocksize(unsigned long filesize, unsigned long max_blocksize);
 unsigned long get_filesize(char *filesize_string);
 unsigned long get_number_from_string(const char *numeric_string);
 unsigned long get_size_from_file(const char *filename);
@@ -46,7 +48,7 @@ void print_indent(int indent);
 void print_indent_wrap(char *string, int indent, int line_length);
 void print_input_error();
 void print_size(char *filesize_string);
-void print_size_error(char *filesize_string);
+void print_size_error(unsigned long filesize);
 void print_size_with_count(char *filesize_string);
 void print_usage();
 
@@ -203,26 +205,36 @@ void print_input_error() {
 }
 
 void print_size(char *filesize_string) {
-    unsigned long size = blocksize(get_filesize(filesize_string));
+    unsigned long filesize = get_filesize(filesize_string);
 
-    if (size < 512) print_size_error(filesize_string);
-    else  printf("%lu\n", size);
+    if (filesize) {
+        unsigned long size = blocksize(filesize, MAXBITSIZE);
+        if (size < 512) print_size_error(filesize);
+        else  printf("%lu\n", size);
+    } else {
+        print_input_error();
+    }
 }
 
-void print_size_error(char *filesize_string) {
+void print_size_error(unsigned long filesize) {
     printf("The only powers-of-two blocksizes for your filesize, ");
-    printf("%s, ", filesize_string);
-    printf("are smaller than 2 bytes or larger than 2^20 bytes.\n");
+    printf("%lu, ", filesize);
+    printf("are smaller than 512 bytes or larger than 2^20 bytes.\n");
 }
 
 void print_size_with_count(char *filesize_string) {
     unsigned long filesize = get_filesize(filesize_string);
-    unsigned long size = blocksize(filesize);
 
-    if (size < 512) {
-        print_size_error(filesize_string);
+    if (filesize) {
+        unsigned long size = blocksize(filesize, MAXBITSIZE);
+
+        if (size < 512) {
+            print_size_error(filesize);
+        } else {
+            printf("%lu blocks of %lu blocksize\n", (filesize / size), size);
+        }
     } else {
-        printf("%lu blocks of %lu blocksize\n", (filesize / size), size);
+        print_input_error();
     }
 }
 
@@ -233,10 +245,12 @@ void print_usage() {
     printf("        blocksizer -h\n");
 }
 
-unsigned long blocksize(unsigned long filesize) {
-    for (int i = 20; i > 0; --i) {
-        if ((filesize % power(2, i)) == 0) {
-            return power(2, i);
+unsigned long blocksize(unsigned long filesize, unsigned long max_blocksize) {
+    for (int i = 0; i < 20; ++i) {
+        int product = max_blocksize >> i;
+
+        if ((filesize % product) == 0) {
+            return product;
         }
     }
 
@@ -250,6 +264,8 @@ unsigned long get_filesize(char *filesize_arg) {
         filesize = get_size_from_file(filesize_arg);
     } else if (is_numeric(filesize_arg)) {
         filesize = get_number_from_string(filesize_arg);
+    } else {
+        filesize = 0;
     }
 
     return filesize;
