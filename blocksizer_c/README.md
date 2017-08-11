@@ -8,6 +8,21 @@ result from using that blocksize when writing to a storage device with `dd`.
 The intended purpose of this tool is to help you optimize for speed when you
 use `dd` to write a filesystem image to a storage device.
 
+## Build
+
+    $ make
+
+## Install
+
+    $ cp blocksizer /somewhere/in/your/shell/$PATH
+    $ rehash                            # only necessary for some shells
+
+## Use
+
+This will provide you with some useful help documentation:
+
+    $ blocksizer -h
+
 ## Copyright
 
 Copyright 2017 Chad Perrin

@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "libhelper.h"
+
 #define MAXBITSIZE 1048576
 
 /*
@@ -30,11 +32,6 @@
  */
 
 int is_numeric(char *string_argument);
-int match_count(char *string_argument);
-int match_help(char *string_argument);
-int match_string(char *s, char *m);
-int print_wrap(int wrap, char *string, int position);
-int wrap_whitespace(int length, char *string, int start);
 
 unsigned long blocksize(unsigned long filesize, unsigned long max_blocksize);
 unsigned long get_filesize(char *filesize_string);
@@ -43,8 +40,6 @@ unsigned long get_size_from_file(const char *filename);
 
 void print_help();
 void print_help_message();
-void print_indent(int indent);
-void print_indent_wrap(char *string, int indent, int line_length);
 void print_input_error();
 void print_size(char *filesize_string);
 void print_size_error(unsigned long filesize);
@@ -90,60 +85,21 @@ int wrap_whitespace(int length, char *string, int start) {
     return length;
 }
 
-int match_count(char* s) {
-    if (match_string(s, "-c")) return 1;
-    else if (match_string(s, "--count")) return 1;
-    else if (match_string(s, "count")) return 1;
-    else return 0;
-}
-
-int match_help(char* s) {
-    if (match_string(s, "-h")) return 1;
-    else if (match_string(s, "--help")) return 1;
-    else if (match_string(s, "help")) return 1;
-    else return 0;
-}
-
-int match_string(char *s, char *m) {
-    int length = strlen(s);
-    int match = 1;
-
-    if (length != strlen(m)) {
-        match = 0;
-    } else {
-        for (int i = 0; i < length; ++i) if (*(s+i) != *(m+i)) match = 0;
-    }
-
-    return match;
-}
-
-int print_wrap(int wrap, char *string, int position) {
-    int remaining_string = strlen(string) - position;
-
-    if (wrap > remaining_string) wrap = remaining_string;
-    wrap = wrap_whitespace(wrap, string, position);
-
-    for (int c = 0; c < wrap; ++c) printf("%c", *(string+position+c));
-    printf("\n");
-
-    return wrap;
-}
-
 void print_help() {
     print_usage();
-    printf("\n");
+    puts("");
     print_help_message();
 }
 
 void print_help_message() {
-    printf("SYNOPSIS:\n\n");
+    puts("SYNOPSIS:\n");
 
     print_indent_wrap(
         "Enter a FILENAME to get the largest blocksize that evenly divides "
         "the byte size of the file whose name you supply.\n", 8, 80
     );
 
-    printf("\n");
+    puts("");
 
     print_indent_wrap(
         "Enter a FILESIZE (integer filesize in bytes, as given by 'ls -l') to "
@@ -152,7 +108,7 @@ void print_help_message() {
         "you meant to enter a FILENAME instead.\n", 8, 80
     );
 
-    printf("\nOPTIONS:\n\n");
+    puts("\nOPTIONS:\n");
 
     print_indent_wrap("-h, [--]help    Print this help information.\n", 8, 80);
 
@@ -160,7 +116,7 @@ void print_help_message() {
         "-c, [--]count   Print block count with calculated blocksize.\n", 8, 80
     );
 
-    printf("\nEXAMPLES:\n\n");
+    puts("\nEXAMPLES:\n");
 
     print_indent_wrap("$ blocksizer size_4587520_file.img\n", 8, 80);
     print_indent_wrap("131072\n\n", 8, 80);
@@ -172,22 +128,8 @@ void print_help_message() {
     print_indent_wrap("35 blocks of 131072 blocksize\n\n", 8, 80);
 }
 
-void print_indent(int indent) {
-    for (int i = 0; i < indent; ++i) printf(" ");
-}
-
-void print_indent_wrap(char *string, int indent, int line_length) {
-    int string_length = strlen(string);
-    int wrap = line_length - indent;
-
-    for (int p = 0; p < string_length; ++p) {
-        print_indent(indent);
-        p += print_wrap(wrap, string, p);
-    }
-}
-
 void print_input_error() {
-    printf("You gave this program invalid input.\n\n");
+    puts("You gave this program invalid input.\n");
     print_usage();
 }
 
@@ -204,9 +146,9 @@ void print_size(char *filesize_string) {
 }
 
 void print_size_error(unsigned long filesize) {
-    printf("The only powers-of-two blocksizes for your filesize, ");
-    printf("%lu, ", filesize);
-    printf("are smaller than 512 bytes or larger than 2^20 bytes.\n");
+    fprintf(stderr, "The only powers-of-two blocksizes for your filesize, ");
+    fprintf(stderr, "%lu, ", filesize);
+    fprintf(stderr, "are smaller than 512 bytes or larger than 2^20 bytes.\n");
 }
 
 void print_size_with_count(char *filesize_string) {
@@ -222,10 +164,10 @@ void print_size_with_count(char *filesize_string) {
 }
 
 void print_usage() {
-    printf("USAGE:  blocksizer [[--]count] <FILENAME|FILESIZE>\n");
-    printf("        blocksizer -c <FILENAME|FILESIZE>\n");
-    printf("        blocksizer [--]help\n");
-    printf("        blocksizer -h\n");
+    puts("USAGE:  blocksizer [[--]count] <FILENAME|FILESIZE>");
+    puts("        blocksizer -c <FILENAME|FILESIZE>");
+    puts("        blocksizer [--]help");
+    puts("        blocksizer -h");
 }
 
 unsigned long blocksize(unsigned long filesize, unsigned long max_blocksize) {
